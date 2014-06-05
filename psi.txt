@@ -1,0 +1,20 @@
+tair:gene1	tair:gene18	uniprotkb:Q570C0	uniprotkb:Q940X7	tair:AtTIR1|tair:TIR1	tair:ATRBX1|tair:HRT1|tair:RBX1|tair:ROC1	psi-mi:"MI:0064"(interaction prediction)	-	pubmed:17675552	taxid:3702	taxid:3702	psi-mi:"MI:1110"(predicted interaction)	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene1	tair:gene17	uniprotkb:Q570C0	uniprotkb:P49677	tair:AtTIR1|tair:TIR1	tair:AXR5|tair:IAA1	psi-mi:"MI:0064"(interaction prediction)	-	pubmed:17675552	taxid:3702	taxid:3702	psi-mi:"MI:1110"(predicted interaction)	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene1	tair:gene16	uniprotkb:Q570C0	uniprotkb:Q9FML2	tair:AtTIR1|tair:TIR1	tair:ATHDA6|tair:AXE1|tair:HDA6|tair:RPD3B|tair:RTS1|tair:SIL1	psi-mi:"MI:0064"(interaction prediction)	-	pubmed:17675552	taxid:3702	taxid:3702	psi-mi:"MI:1110"(predicted interaction)	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene1	tair:gene15	uniprotkb:Q570C0	uniprotkb:P43292	tair:AtTIR1|tair:TIR1	tair:ASK2|tair:SNRK2-1|tair:SNRK2.1|tair:SRK2G	psi-mi:"MI:0064"(interaction prediction)	-	pubmed:17675552	taxid:3702	taxid:3702	psi-mi:"MI:1110"(predicted interaction)	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene1	tair:gene14	uniprotkb:Q570C0	uniprotkb:Q9SDY5	tair:AtTIR1|tair:TIR1	tair:RCE1	psi-mi:"MI:0064"(interaction prediction)	-	pubmed:17675552	taxid:3702	taxid:3702	psi-mi:"MI:1110"(predicted interaction)	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene1	tair:gene13	uniprotkb:Q570C0	uniprotkb:P10798	tair:AtTIR1|tair:TIR1	tair:RBCS3B	psi-mi:"MI:0064"(interaction prediction)	-	pubmed:17675552	taxid:3702	taxid:3702	psi-mi:"MI:1110"(predicted interaction)	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene2	tair:gene1	uniprotkb:P43291	uniprotkb:Q570C0	tair:ASK1|tair:SNRK2-4|tair:SNRK2.4|tair:SRK2A	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0019"(coip)	-	pubmed:16045473	taxid:3702	taxid:3702	psi-mi:"MI:0218"(physical association)	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene2	tair:gene1	uniprotkb:P43291	uniprotkb:Q570C0	tair:ASK1|tair:SNRK2-4|tair:SNRK2.4|tair:SRK2A	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0018"(2 hybrid)	-	pubmed:16045473	taxid:3702	taxid:3702	-	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene3	tair:gene1	uniprotkb:Q38825	uniprotkb:Q570C0	tair:AXR2|tair:IAA7	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0004"(affinity chromatography technology)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene3	tair:gene1	uniprotkb:Q38825	uniprotkb:Q570C0	tair:AXR2|tair:IAA7	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0004"(affinity chromatography technology)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene1	tair:gene12	uniprotkb:Q570C0	uniprotkb:O49484	tair:AtTIR1|tair:TIR1	tair:ASK11|tair:SK11	-	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene4	tair:gene1	uniprotkb:P93830	uniprotkb:Q570C0	tair:AXR3|tair:IAA17	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0004"(affinity chromatography technology)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene5	tair:gene1	uniprotkb:Q38822	uniprotkb:Q570C0	tair:IAA3|tair:SHY2	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0096"(pull down)	-	pubmed:14617065	taxid:3702	taxid:3702	psi-mi:"MI:0218"(physical association)	psi-mi:"MI:2165"(BAR)	-	-
+tair:gene6	tair:gene1	uniprotkb:Q94AH6	uniprotkb:Q570C0	tair:ATCUL1|tair:AXR6|tair:CUL1	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0019"(coip)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene7	tair:gene1	uniprotkb:Q9FHW7	uniprotkb:Q570C0	tair:ASK2|tair:SKP1B	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0018"(2 hybrid)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene7	tair:gene1	uniprotkb:Q9FHW7	uniprotkb:Q570C0	tair:ASK2|tair:SKP1B	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0019"(coip)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene8	tair:gene1	uniprotkb:Q39255	uniprotkb:Q570C0	tair:ASK1|tair:ATSKP1|tair:SKP1|tair:SKP1A|tair:UIP1	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0018"(2 hybrid)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene9	tair:gene1	uniprotkb:Q39255	uniprotkb:Q570C0	tair:ASK1|tair:ATSKP1|tair:SKP1|tair:SKP1A|tair:UIP1	tair:AtTIR1|tair:TIR1	psi-mi:"MI:0019"(coip)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene1	tair:gene11	uniprotkb:Q570C0	uniprotkb:Q38830|uniprotkb:F4I5P9	tair:AtTIR1|tair:TIR1	tair:BDL|tair:IAA12	psi-mi:"MI:0004"(affinity chromatography technology)	-	-	taxid:3702	taxid:3702	-	-	-	-
+tair:gene1	tair:gene10	uniprotkb:Q570C0	uniprotkb:Q9LSX9	tair:AtTIR1|tair:TIR1	tair:ASK9|tair:SK9	-	-	-	taxid:3702	taxid:3702	-	-	-	-
