@@ -1,3 +1,4 @@
+
 <html lang="en" dir="ltr"
   xmlns:content="http://purl.org/rss/1.0/modules/content/"
   xmlns:dc="http://purl.org/dc/terms/"
@@ -166,7 +167,7 @@
     <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script type="text/javascript" src="https://araport.org/sites/all/libraries/cytoscape.js/cytoscape.min.js"></script>
 <!-------------------------------------- HARD CODED SCRIPT LOCATION AHEAD FOR LOCALHOST USE ONLY! ---------->
-    <script type="text/javascript" src="/arbor.js"></script>
+    <script type="text/javascript" src="arbor.js"></script>
 <!--------------------------------------- END HARD CODED SCRIPT LOCATION ------------------------------->
     
     <style type="text/css">
@@ -239,7 +240,7 @@ jQuery(function($){
     	
     	//if it's new give it a color, and add the new color and the corresponding experiment name to two arrays. They will be used to construct the graph key later. 
     	//k is the counter to which colors have been used already. if the number of experiments is greater than the number of colors, the counter resets and it starts reusing colors.
-    	if (found == 0){
+    	if (experiments.indexOf(elements.edges[i].data.humanReadable) ==-1){
     	experiments.push(elements.edges[i].data.humanReadable);
     	colorsused.push(colors[k]);
     	elements.edges[i].data.lineColor = colors[k];
@@ -287,9 +288,9 @@ jQuery(function($){
 			  })
 			.selector('edge')
 			  .css({
-				'target-arrow-shape': 'triangle',
+			/*	'target-arrow-shape': 'triangle',*/
 				'line-color':'data(lineColor)',
-				'target-arrow-color':'data(lineColor)',
+			/*	'target-arrow-color':'data(lineColor)',*/
 				'width': '6'
 				  })
 			.selector(':selected')
@@ -309,61 +310,73 @@ jQuery(function($){
   
 		  ready: function(){
 			window.cy = this;
-	
+
 			// giddy up...
-	
+
 			cy.elements().unselectify();
-	
+
 			cy.on('tap', 'node', function(e){
 			  var node = e.cyTarget; 
 			  var neighborhood = node.neighborhood().add(node);
-	  
+
 			  cy.elements().addClass('faded');
 			  neighborhood.removeClass('faded');
 			});
-	
+
 			cy.on('tap', function(e){
 			  if( e.cyTarget === cy ){
 				cy.elements().removeClass('faded');
 			  }
 			});
 		  },
-		  
-		  
+
+
 		}); 
     } //end loadCy()
 
     $("#clearGraph").click(function() {
         $("#cy").addClass('hidden');
         $("#gene").val('');
+	$("#key").text('');
     });
+
+  var ajaxFail = function(url) {
+			$(".result" ).addClass("alert alert-danger");
+			$( ".result" ).html( "We could not load the gene data from " + url );
+		};
 
 /////////////////////////////DATA HERE
 	$("#geneSubmit").click(function(e){	
-	    var nodes = [];
+	        $("#key").text('');//clear the key for each resubmission
+/////////////////////////////////hard-coded url for data file here, should be changed to point to the webservice supplying our data!
+	//	var url = "https://www.araport.org/apiproxy/BARClient/"+$("#gene").val(); 
+var url = "psi.txt";
+//////////////////////////////////////end hard coded url for data file
+		$(".result" ).removeClass("alert alert-danger");
+		var gene = $("#gene").val();
+		//did the user enter the name of a gene?
+		if(gene.length > 0) {
+			//perform ajax GET
+			$.get( url,function(data){ //success function 
+                          if(data.length <= 0) {  
+                          ajaxFail(url);}
+			  else { 
+					 parseItToJSON(data);
+                               }
+                         },"text");
+		} else {
+			alert("You must enter a gene first." ) ;
+			return;
+	        	}		
+	}); /// end gene submit function
+var parseItToJSON = function(data){
+                var nodes = [];
 		var proteins = [];
 		var edges = [];
 		var elements = {};
 		var gene = $("#gene").val();
-/////////////////////////////////hard-coded url for data file here, should be changed to point to the webservice supplying our data!
-		var url = "/psi.txt"; 
-//////////////////////////////////////end hard coded url for data file
-		$(".result" ).removeClass("alert alert-danger");
 
-		
-		//various failures to load the gene data call this function
-		var ajaxFail = function () {
-			$(".result" ).addClass("alert alert-danger");
-			$( ".result" ).html( "We could not load the gene data from " + url );
-		};
-		//did the user enter the name of a gene?
-		if(gene.length > 0) {
-			//perform ajax GET
-			$.get( url, 
-			function( data ) { //success! 
-			  if(data.length <= 0) { ajaxFail(); }
-			  else {  ///parse the weird data type the BAR webservice currently gives us, to JSON. Hopefully this code will later be implemented in the webservice...?
-				  data = data.split("\n");
+	    data = data.split("\n");
 				  for(var i=0; i< data.length; i++) {
 					var line = data[i].split("\t");				  	
 				  	if(line[0].length > 0) {
@@ -385,7 +398,7 @@ jQuery(function($){
 				  	  	proteins.push(p2);
 				  	    nodes.push({data: {id: p2, name: p2}});
 				  	  } else { console.log('not added');}
-				  	  
+
 				  	  //add the interaction
 				  	  edges.push({data:{ source: p1 , target: p2, lineColor: p3, humanReadable:p4,}});
 				  	}
@@ -393,16 +406,12 @@ jQuery(function($){
 
 				  elements = {nodes: nodes, edges: edges};
 				  console.log(JSON.stringify(elements)); ///prints new JSON to the console.  
-				  
+
 				  loadCy(elements);
 
 			  }
-			}, "text").fail(ajaxFail); //do failure stuff
-		} else {
-			alert("You must enter a gene first.");
-			return;
-		}		
-	}); /// end gene submit function
+			
+
 }); //end Jquery functions
 </script></div>
   </div>
