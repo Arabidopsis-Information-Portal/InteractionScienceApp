@@ -276,8 +276,17 @@ String.prototype.hashCode = function(){
 		var result = assignViewOptions(elements);
 		elements = result.elements;
 		var keyInfo = result.keyInfo;
-		
 		buildKey(keyInfo);
+		
+		
+		//based on the number of nodes, changes up the font size - otherwise the edge labels make it impossible to see the nodes, which is annoying
+		var fontSize = 10;
+		if (elements.nodes.length < 25) fontSize = 20;
+		else if (elements.nodes.length >= 25 && elements.nodes.length <50) fontSize = 15;
+		else if (elements.nodes.length >= 50 && elements.nodes.length <100) fontSize = 12;
+		else if (elements.nodes.length >= 100) fontSize = 9;
+		
+		
 		
 		//now construct the Cytoscape object		
  		  
@@ -303,21 +312,19 @@ String.prototype.hashCode = function(){
 			}
     	  },
     	  minZoom:0.25,
-    	  maxZoom:2.0,
 		  style: cytoscape.stylesheet()
 			.selector('node')
 			  .css({
 				'content': 'data(name)',
 				'text-valign': 'center',
 				'color': 'white',
+				'font-size':fontSize,
 				'text-outline-width': 2,
 				'text-outline-color': '#888'
 			  })
 			.selector('edge')
 			  .css({
-			/*	'target-arrow-shape': 'triangle',*/
 				'line-color':'data(lineColor)',
-			/*	'target-arrow-color':'data(lineColor)',*/
 				'width': 'data(lineThickness)'
 				  })
 			.selector(':selected')
@@ -375,6 +382,11 @@ String.prototype.hashCode = function(){
     var result = {};
     var keyInfo = {};
     
+    
+			var numOfNodes = elements.nodes.length;
+		
+			
+			
     		for (var m = 0; m < elements.edges.length; m++){
 		if (elements.edges[m].data.confidenceScore != '-'){
 		if (elements.edges[m].data.confidenceScore < .30) elements.edges[m].data.lineThickness = 1;
@@ -445,7 +457,8 @@ String.prototype.hashCode = function(){
    $("#cy").qtip('hide');
    }
     else if ($("input[name='edgedisplay']:checked").val() == 'div') {
-	$("#mouseover").addClass('hidden');}
+	//$("#mouseover").addClass('hidden');
+	}
     }
     
     function makeDiv(target){
@@ -524,9 +537,12 @@ function makeTooltips(target){
 	$("#key").text('');
     });
 
-  var ajaxFail = function(url) {
+  var ajaxFail = function(url, errorType) {
 			$(".result" ).addClass("alert alert-danger");
 			$( ".result" ).html( "We could not load the gene data from " + url );
+			if (errorType != ''){
+			$( ".result" ).append( "<br>Error type: " + errorType );
+			}
 		};
 
 ///Retrieves data, then parses it into a JSON file, containing all the information needed to construct the Cytoscape object. 
@@ -547,13 +563,23 @@ var url = "psi.txt";
 		//did the user enter the name of a gene?
 		if(gene.length > 0) {
 			//perform ajax GET
-			$.get( url,function(data){ //success function 
+			var request = $.get( url,function(data){ //success function 
                           if(data.length <= 0) {  
-                          ajaxFail(url);}
+                          ajaxFail(url, '');}
 			  else { //if data was retrieved
 					 parseItToJSON(data);
                                }
                          },"text");
+                         
+                request.error(function(jqXHR, textStatus, errorThrown) {
+ 			 	var errorType = '';
+ 			 
+ 			 if (textStatus == 'timeout')
+ 			   errorType = 'server is not responding';
+ 			 else if (textStatus == 'error')
+   			 errorType = errorThrown;
+   			 ajaxFail(url, errorType);
+});
 		} else {
 			alert("You must enter a gene first." ) ;
 			return;
