@@ -272,60 +272,15 @@ String.prototype.hashCode = function(){
 ////////////////////////Loads Cy from the JSON received; assigns view options based on this data, and constructs the Cytoscape object. 
     var render = function(elements) {
 	
-		//First the view options:
+		//takes data structure, and assigns 
+		var result = assignViewOptions(elements);
+		elements = result.elements;
+		var keyInfo = result.keyInfo;
 		
+		buildKey(keyInfo);
 		
-		//assigns the confidence scores to line thicknesses by modifying the JSON that will be passed to Cytoscape.
-		for (var m = 0; m < elements.edges.length; m++){
-		if (elements.edges[m].data.confidenceScore != '-'){
-		if (elements.edges[m].data.confidenceScore < .30) elements.edges[m].data.lineThickness = 1;
-		else if (elements.edges[m].data.confidenceScore >= .30 && elements.edges[m].data.confidenceScore < .40) elements.edges[m].data.lineThickness = 3;
-		else if (elements.edges[m].data.confidenceScore >= .40 && elements.edges[m].data.confidenceScore < .50) elements.edges[m].data.lineThickness = 6;
-		else if (elements.edges[m].data.confidenceScore >= .50 && elements.edges[m].data.confidenceScore < .60) elements.edges[m].data.lineThickness = 9;
-		else if (elements.edges[m].data.confidenceScore >= .60 && elements.edges[m].data.confidenceScore < .70) elements.edges[m].data.lineThickness = 11;
-		else if (elements.edges[m].data.confidenceScore >= .70) elements.edges[m].data.lineThickness = 15;
-		}
-		}
-		
-        //loops through the json elements received through the AJAX call and assigns colors to the experiment types. 
-    	var colors = ['#2BAB2B','#3366CC','#B8008A', '#7634D9', '#FF8A14','#FF0000', '#74F774', '#73A2FF', '#F28DD9', '#AF8DE0', '#FA9696', '#175E17', '#0A3180', '#69004E', '#400F8A', '#5C330A', '#730000'];
-       	var experiments = [];
-    	var colorsused = [];
-    	var k = 0;
-    	for (var i = 0; i < elements.edges.length;i++){
-    	var found = 0; 
-    	//find out whether this particular experiment has been assigned a color yet
-    	for (var j = 0; j < experiments.length;j++){
-    	if (experiments[j] == elements.edges[i].data.humanReadable){found = 1;
-    	elements.edges[i].data.lineColor = colorsused[j];
-    	}
-    	}
-    	
-    	//if it's new give it a color, and add the new color and the corresponding experiment name to two arrays. They will be used to construct the graph key later. 
-    	//k is the counter to which colors have been used already. if the number of experiments is greater than the number of colors, the counter resets and it starts reusing colors.
-    	if (experiments.indexOf(elements.edges[i].data.humanReadable) ==-1){
-    	experiments.push(elements.edges[i].data.humanReadable);
-    	colorsused.push(colors[k]);
-    	elements.edges[i].data.lineColor = colors[k];
-    	k++
-    	if (k >= colors.length) k=0;
-    	}
-    	}
-    	
-    	///Now we construct the objects themselves: Cytoscape, tooltips, the key. 
-    	
-    	//constructs a key on the fly based on the matching of colors to experiments determined above, and the hard-coded line thickness values. 
-		$('#colorkey').append('<b>Interaction determination by line color: <br></b>');    	
-    	for (var i = 0; i < experiments.length; i++){
-    	$('#colorkey').append('<span style="color:'+ colorsused[i] + '">' + experiments[i] + "</span><br>");
-    	}  	
-    	
-    	//and unhide the key
-    	$('#outerkey').removeClass('hidden'); 
-    	
-    	//now construct the Cytoscape object based on the options supplied by the JSON object. 
-		
- 		$('#cy').removeClass('hidden');   
+		//now construct the Cytoscape object		
+ 		  
 		$('#cy').cytoscape({
 		layout: { name: "arbor",
 			liveUpdate: true,
@@ -380,7 +335,7 @@ String.prototype.hashCode = function(){
   
 		  elements: elements,
   //bind functions to various events - notably, the mouseover tooltips
-		  ready: function(){
+		ready: function(){
 			window.cy = this;
 
 			// giddy up...
@@ -401,39 +356,100 @@ String.prototype.hashCode = function(){
 			  }
 			});
 		
-		    //construct the mouseovers 
-    cy.on('mouseover','edge', function(event){
-       var target = event.cyTarget;
-   
-   
-  if ($("input[name='edgedisplay']:checked").val() == 'tooltip')   { makeTooltips(target);
-  }
-  else if ($("input[name='edgedisplay']:checked").val() == 'div') {makeDiv(target);
-	$("#cy").qtip('disable');}
-  });
+		    //on mouseover/mouseout, display and hide the appropriate type of mouseover (by calling the makeMouseover()/unmakeMouseover() functions)
+   		   cy.on('mouseover','edge', function(event){
+              var target = event.cyTarget;
+              makeMouseover(target);
+           });
   
-   cy.on('mouseout','edge', function(event){
-   
-   
-   if ($("input[name='edgedisplay']:checked").val() == 'tooltip')   {
+           cy.on('mouseout','edge', function(event){
+              unmakeMouseover();
+          });
+	    }, //end ready function
+		}); //end Cytoscape object options
+		
+		$('#cy').removeClass('hidden'); 
+    } //end render()
+    
+    function assignViewOptions(elements){
+    var result = {};
+    var keyInfo = {};
+    
+    		for (var m = 0; m < elements.edges.length; m++){
+		if (elements.edges[m].data.confidenceScore != '-'){
+		if (elements.edges[m].data.confidenceScore < .30) elements.edges[m].data.lineThickness = 1;
+		else if (elements.edges[m].data.confidenceScore >= .30 && elements.edges[m].data.confidenceScore < .40) elements.edges[m].data.lineThickness = 3;
+		else if (elements.edges[m].data.confidenceScore >= .40 && elements.edges[m].data.confidenceScore < .50) elements.edges[m].data.lineThickness = 6;
+		else if (elements.edges[m].data.confidenceScore >= .50 && elements.edges[m].data.confidenceScore < .60) elements.edges[m].data.lineThickness = 9;
+		else if (elements.edges[m].data.confidenceScore >= .60 && elements.edges[m].data.confidenceScore < .70) elements.edges[m].data.lineThickness = 11;
+		else if (elements.edges[m].data.confidenceScore >= .70) elements.edges[m].data.lineThickness = 15;
+		}
+		}
+		
+        //loops through the json elements received through the AJAX call and assigns colors to the experiment types. 
+    	var colors = ['#2BAB2B','#3366CC','#B8008A', '#7634D9', '#FF8A14','#FF0000', '#74F774', '#73A2FF', '#F28DD9', '#AF8DE0', '#FA9696', '#175E17', '#0A3180', '#69004E', '#400F8A', '#5C330A', '#730000'];
+       	var experiments = [];
+    	var colorsused = [];
+    	var k = 0;
+    	for (var i = 0; i < elements.edges.length;i++){
+    	var found = 0; 
+    	//find out whether this particular experiment has been assigned a color yet
+    	for (var j = 0; j < experiments.length;j++){
+    	if (experiments[j] == elements.edges[i].data.humanReadable){found = 1;
+    	elements.edges[i].data.lineColor = colorsused[j];
+    	}
+    	}
+    	
+    	//if it's new give it a color, and add the new color and the corresponding experiment name to two arrays. They will be used to construct the graph key later. 
+    	//k is the counter to which colors have been used already. if the number of experiments is greater than the number of colors, the counter resets and it starts reusing colors.
+    	if (experiments.indexOf(elements.edges[i].data.humanReadable) ==-1){
+    	experiments.push(elements.edges[i].data.humanReadable);
+    	colorsused.push(colors[k]);
+    	elements.edges[i].data.lineColor = colors[k];
+    	k++
+    	if (k >= colors.length) k=0;
+    	}
+    	}
+    	
+    	keyInfo = {colorsused: colorsused, experiments: experiments};
+    	result = {keyInfo: keyInfo, elements: elements};
+    	return result;
+    	
+    }
+    //places key on the page
+    function buildKey(keyInfo){
+    var experiments = keyInfo.experiments;
+    var colorsused = keyInfo.colorsused;
+    $('#colorkey').append('<b>Interaction determination by line color: <br></b>');    	
+    	for (var i = 0; i < experiments.length; i++){
+    	$('#colorkey').append('<span style="color:'+ colorsused[i] + '">' + experiments[i] + "</span><br>");
+    	}  	
+    	
+    	//and unhide the key
+    	$('#outerkey').removeClass('hidden'); 
+    	
+}
+    //called whenever there is a mouseover on an edge; shows the appropriate sort of mouseover - either tooltip or div.
+    function makeMouseover(target){
+  	if ($("input[name='edgedisplay']:checked").val() == 'tooltip')   { makeTooltips(target);
+ 
+  	}
+  	else if ($("input[name='edgedisplay']:checked").val() == 'div') {makeDiv(target);
+  	$("#mouseover").removeClass('hidden');
+	}
+   }
+    
+    //called whenever the mouse leaves an edge - hides whichever sort of mouseover is currently in use
+    function unmakeMouseover(){
+       if ($("input[name='edgedisplay']:checked").val() == 'tooltip')   {
    $("#cy").qtip('hide');
    }
     else if ($("input[name='edgedisplay']:checked").val() == 'div') {
-	$("#cy").qtip('disable');}
-  
-    });
-  
-		
-		
-		  },
-
-
-		}); 
-    } //end render()
+	$("#mouseover").addClass('hidden');}
+    }
     
     function makeDiv(target){
   
-    $("#mouseover").removeClass('hidden');
      var sourceName = target.data("source"); 
      var targetName = target.data("target");
      var experiment = target.data('humanReadable');
@@ -443,7 +459,7 @@ String.prototype.hashCode = function(){
      var sourceDatabase = target.data('sourceDatabase');   
      $("#mouseover").text('');                    
      $("#mouseover").append("<b>Information about this edge</b> <br>Experiment: " + experiment + "<br>Confidence score: " + CV + "<br>First author: " + firstAuthor + "<br>Source Database: " + sourceDatabase + "<br>Publication: " + publication ); 
-
+		
     
     }
     
@@ -462,9 +478,11 @@ function makeTooltips(target){
       content: "Experiment: " + experiment + "<br>Confidence score: " + CV + "<br>First author: " + firstAuthor + "<br>Source Database: " + sourceDatabase + "<br>Publication: " + publication , 
       show: {
         ready: true,
-        delay:2000
+        delay:1000
       },
-      hide:{event:'click'},
+      hide:{distance:5,
+      event:'click'},
+      
       position: {
         my: 'top center',
         at: 'bottom center',
@@ -483,17 +501,17 @@ function makeTooltips(target){
       }
     });
     
-    var api = tooltips.qtip('api');
-
-
+ var api = tooltips.qtip('api');
 }
 
-
+//hides the old mouseover, so the new one can be unhidden and filled by makeMouseover()
 	$("input[name='edgedisplay']").change(function(){
-	console.log('481');
-	if ($("input[name='edgedisplay']:checked").val() == 'tooltip'){$("#mouseover").addClass('hidden');
+	if ($("input[name='edgedisplay']:checked").val() == 'tooltip'){
+	$("#mouseover").addClass('hidden');
 	}
-	else if ($("input[name='edgedisplay']:checked").val() == 'div'){$("#mouseover").removeClass('hidden');}
+	else if ($("input[name='edgedisplay']:checked").val() == 'div'){
+	$("#cy").qtip('disable');
+	}
 	
 	}); 
 	   
@@ -598,14 +616,14 @@ var parseItToJSON = function(data){
 				  	  	proteins.push(p2);
 				  	    nodes.push({data: {id: p2, name: p2}});
 				  	  } else { console.log('not added');}
-						var idis = p1 + p2;
+					
 
 						var duplicate = false;
 						for (var m = 0; m < edges.length; m++){
 						if ((((p1 == edges[m].data.source) && (p2 == edges[m].data.target)) || ((p2 == edges[m].data.source) && (p1 == edges[m].data.target))) && (p3 == edges[m].data.lineColor) && (p5 == edges[m].data.confidenceScore))
 						{duplicate = true;}
 						}
-					if (!duplicate){		  	  edges.push({data:{ source: p1 , target: p2, id: idis, lineColor: p3, humanReadable:p4, confidenceScore:p5, lineThickness: '-', firstAuthor:p6, publication:p7, sourceDatabase: p8}});     }
+					if (!duplicate){		  	  edges.push({data:{ source: p1 , target: p2, lineColor: p3, humanReadable:p4, confidenceScore:p5, lineThickness: '-', firstAuthor:p6, publication:p7, sourceDatabase: p8}});     }
 				  	}
 				  }
 
