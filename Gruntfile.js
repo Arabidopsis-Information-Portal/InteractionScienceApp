@@ -1,4 +1,5 @@
 /*global module:false*/
+'use strict';
 module.exports = function(grunt) {
 
   require('load-grunt-tasks')(grunt);
@@ -13,33 +14,10 @@ module.exports = function(grunt) {
     // Task configuration.
     config: config,
 
-    jshint: {
-      options: {
-        curly: true,
-        eqeqeq: true,
-        immed: true,
-        latedef: true,
-        newcap: true,
-        noarg: true,
-        sub: true,
-        undef: true,
-        unused: true,
-        boss: true,
-        eqnull: true,
-        browser: true,
-        globals: {
-          jQuery: true
-        }
-      },
-      gruntfile: {
-        src: 'Gruntfile.js'
-      }
-    },
-
     watch: {
       gruntfile: {
         files: 'Gruntfile.js',
-        tasks: ['jshint:gruntfile']
+        tasks: ['jshint']
       },
       scripts: {
         files: ['<%= config.app %>/scripts/{,*/}*.js'],
@@ -134,6 +112,10 @@ module.exports = function(grunt) {
 
   grunt.registerTask('default', [
     'serve'
+  ]);
+
+  grunt.registerTask('test', [
+    'jshint'
   ]);
 
 };

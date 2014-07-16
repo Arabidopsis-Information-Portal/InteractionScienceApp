@@ -1,31 +1,8 @@
-<!-- Include all compiled plugins (below), or include individual files as needed -->
-<script type="text/javascript" src="scripts/cytoscape.js"></script>
-<!-- HARD CODED SCRIPT LOCATION AHEAD FOR LOCALHOST USE ONLY! -->
-<script type="text/javascript" src="scripts/arbor.js"></script>
-<!-- END HARD CODED SCRIPT LOCATION -->
+<!-- EBI Interaction Viewer Science App -->
 
 <style type="text/css">
-  body {
-    font: 14px helvetica neue, helvetica, arial, sans-serif;
-  }
   #cy {
     height: 600px;
-    position: relative;
-  }
-  #outerkey {
-    padding: 20px;
-    display: inline-block;
-    position: relative;
-    width: 100%;
-  }
-  #colorkey {
-    float: left;
-    position: relative;
-    width: 33%;
-  }
-  #linekey {
-    float: left;
-    width: 33%;
     position: relative;
   }
   #mouseover {
@@ -34,506 +11,67 @@
     height: 20%;
     position: relative;
   }
-  .warning,
-  .error {
-    border: 1px solid;
-    margin: 10px 0px;
-    padding: 15px 10px 15px 50px;
-    background-repeat: no-repeat;
-    background-position: 10px center;
-  }
-  .warning {
-    color: #9F6000;
-    background-color: #FEEFB3;
-  }
-  .error {
-    color: #D8000C;
-    background-color: #FFBABA;
-  }
 </style>
 
-<h1>Enter a gene name to see its protein-protein interactions</h1>
-<p>Query (Any gene name or AGI ID, e.g. ASK1, AT1G10940, AT3G62980):</p>
-<form id="geneForm">
-  <input type="text" name="gene" id="gene" value="AT3G62980" />
-  <button type="button" class="btn btn-success" id="geneSubmit">Submit</button>
-  <button type="button" class="btn btn-danger" id="clearGraph">Clear</button>
-</form>
-<div id="box">
-  <div id="cy" class="hidden"></div>
-</div>
-<div id="edgeoptions">
-  <form action=''>
-    <input type="radio" name="edgedisplay" value="tooltip">Show information about interactions on mouseover in tooltips
-    <br>
-    <input type="radio" name="edgedisplay" checked value="div">Show information about interactions on mouseover in the key (better for older browsers, including all versions of Internet Explorer, or those with compatibility issues).
-
+<div id="ebi_iv">
+  <h1>Enter a gene name to see its protein-protein interactions</h1>
+  <p>Query (Any gene name or AGI ID, e.g. ASK1, AT1G10940, AT3G62980):</p>
+  <form name="ebi_iv_gene_form" class="form-inline">
+    <label for="ebi_iv_gene" class="sr-only">Gene name or AGI ID</label>
+    <input type="text" name="ebi_iv_gene" id="ebi_iv_gene" value="AT3G62980" class="form-control" placeholder="Gene name or AGI ID"/>
+    <button type="submit" class="btn btn-success">Submit</button>
+    <button type="button" class="btn btn-danger" id="ebi_iv_gene_form_reset">Clear</button>
   </form>
 
-</div>
-<div id="mouseover" class='hidden'><b>Information about this edge</b>
-  <br>Mouse over an edge on the above diagram to get information about the interaction it represents.</div>
-<div class="result"></div>
-<br>
-<div id="outerkey" class="hidden">
-  <div id="colorkey"></div>
-  <div id="linekey"><b>Line thickness by EBI's mi-score confidence value (more information<a href='http://www.ebi.ac.uk/intact/pages/faq/faq.xhtml#5'> here</a>):</b>
-    <br>
-    <img src='images/linekey.png' />
+  <div>
+    <div id="cy" class="hidden"></div>
+  </div>
+
+  <div id="edgeoptions">
+    <form>
+      <div class="radio">
+        <label>
+          <input type="radio" name="edgedisplay" value="tooltip">
+          Show information about interactions on mouseover in tooltips
+        </label>
+      </div>
+      <div class="radio">
+        <label>
+          <input type="radio" name="edgedisplay" checked value="div">
+          Show information about interactions on mouseover in the key (better for older browsers, including all versions of Internet Explorer, or those with compatibility issues).
+        </label>
+      </div>
+    </form>
+  </div>
+
+  <div id="mouseover" class='hidden'>
+    <b>Information about this edge</b>
+    <p>Mouse over an edge on the above diagram to get information about the interaction it represents.</p>
+  </div>
+
+  <div class="result"></div>
+
+  <div id="outerkey" class="row hidden">
+    <div id="colorkey" class="col-sm-6"></div>
+    <div id="linekey" class="col-sm-6">
+      <p>
+        <b>Line thickness by <a href="http://www.ebi.ac.uk/intact/pages/faq/faq.xhtml#5" target="_blank">EBI's mi-score confidence value.</b>
+      </p>
+      <img src='images/linekey.png' />
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col-sm-12">
+      <p>
+        Data &amp; web services provided by
+        <a href="http://www.ebi.ac.uk/intact/" target="_blank">EMBL-EBI IntAct</a>.
+      </p>
+    </div>
   </div>
 </div>
-<div>
-  <p>Data & web services provided by The Bio-Analytic Resource for Plant Biology (BAR): <a href="http://bar.utoronto.ca/webservices" target="_blank">http://bar.utoronto.ca/webservices</a>/</p>
-</div>
 
-<script type="text/javascript">
-  jQuery(function($) {
+<script src="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.js"></script>
+<link href="http://cdnjs.cloudflare.com/ajax/libs/qtip2/2.2.0/jquery.qtip.min.css" rel="stylesheet" type="text/css" />
 
-    String.prototype.hashCode = function() {
-      var hash = 0;
-      if (this.length == 0) return hash;
-      for (i = 0; i < this.length; i++) {
-        char = this.charCodeAt(i);
-        hash = ((hash << 5) - hash) + char;
-        hash = hash & hash; // Convert to 32bit integer
-      }
-      return hash;
-    }
-
-    //    $(".portlet-maximize").click(function () {
-    //    });
-    ////////////////////////Loads Cy from the JSON received; assigns view options based on this data, and constructs the Cytoscape object.
-    var render = function(elements) {
-
-      //takes data structure, and assigns
-      var result = assignViewOptions(elements);
-      elements = result.elements;
-      var keyInfo = result.keyInfo;
-      buildKey(keyInfo);
-
-
-      //based on the number of nodes, changes up the font size - otherwise the edge labels make it impossible to see the nodes, which is annoying
-      var fontSize = 10;
-      if (elements.nodes.length < 25) fontSize = 20;
-      else if (elements.nodes.length >= 25 && elements.nodes.length < 50) fontSize = 15;
-      else if (elements.nodes.length >= 50 && elements.nodes.length < 100) fontSize = 12;
-      else if (elements.nodes.length >= 100) fontSize = 9;
-
-
-
-      //now construct the Cytoscape object
-
-      $('#cy').cytoscape({
-        layout: {
-          name: "arbor",
-          liveUpdate: true,
-          maxSimulationTime: 4000,
-          padding: [50, 50, 50, 50],
-          simulationBounds: undefined,
-          ungrabifyWhileSimulating: true,
-          repulsion: undefined,
-          stiffness: undefined,
-          friction: undefined,
-          gravity: true,
-          fps: undefined,
-          precision: undefined,
-          nodeMass: undefined,
-          edgeLength: undefined,
-          stepSize: 1,
-          stableEnergy: function(energy) {
-            var e = energy;
-            return (e.max <= 0.5) || (e.mean <= 0.3);
-          }
-        },
-        minZoom: 0.25,
-        style: cytoscape.stylesheet()
-          .selector('node')
-          .css({
-            'content': 'data(name)',
-            'text-valign': 'center',
-            'color': 'white',
-            'font-size': fontSize,
-            'text-outline-width': 2,
-            'text-outline-color': '#888'
-          })
-          .selector('edge')
-          .css({
-            'line-color': 'data(lineColor)',
-            'width': 'data(lineThickness)'
-          })
-          .selector(':selected')
-          .css({
-            'background-color': 'black',
-            'line-color': 'black',
-            'target-arrow-color': 'black',
-            'source-arrow-color': 'black'
-          })
-          .selector('.faded')
-          .css({
-            'opacity': 0.25,
-            'text-opacity': 0
-          }),
-
-        elements: elements,
-        //bind functions to various events - notably, the mouseover tooltips
-        ready: function() {
-          window.cy = this;
-
-          // giddy up...
-
-          cy.elements().unselectify();
-
-          cy.on('tap', 'node', function(e) {
-            var node = e.cyTarget;
-            var neighborhood = node.neighborhood().add(node);
-
-            cy.elements().addClass('faded');
-            neighborhood.removeClass('faded');
-          });
-
-          cy.on('tap', function(e) {
-            if (e.cyTarget === cy) {
-              cy.elements().removeClass('faded');
-            }
-          });
-
-          //on mouseover/mouseout, display and hide the appropriate type of mouseover (by calling the makeMouseover()/unmakeMouseover() functions)
-          cy.on('mouseover', 'edge', function(event) {
-            var target = event.cyTarget;
-            makeMouseover(target);
-          });
-
-          cy.on('mouseout', 'edge', function(event) {
-            unmakeMouseover();
-          });
-        }, //end ready function
-      }); //end Cytoscape object options
-
-      $('#cy').removeClass('hidden');
-    } //end render()
-
-      function assignViewOptions(elements) {
-        var result = {};
-        var keyInfo = {};
-
-
-        var numOfNodes = elements.nodes.length;
-
-
-
-        for (var m = 0; m < elements.edges.length; m++) {
-          if (elements.edges[m].data.confidenceScore != '-') {
-            if (elements.edges[m].data.confidenceScore < .30) elements.edges[m].data.lineThickness = 1;
-            else if (elements.edges[m].data.confidenceScore >= .30 && elements.edges[m].data.confidenceScore < .40) elements.edges[m].data.lineThickness = 3;
-            else if (elements.edges[m].data.confidenceScore >= .40 && elements.edges[m].data.confidenceScore < .50) elements.edges[m].data.lineThickness = 6;
-            else if (elements.edges[m].data.confidenceScore >= .50 && elements.edges[m].data.confidenceScore < .60) elements.edges[m].data.lineThickness = 9;
-            else if (elements.edges[m].data.confidenceScore >= .60 && elements.edges[m].data.confidenceScore < .70) elements.edges[m].data.lineThickness = 11;
-            else if (elements.edges[m].data.confidenceScore >= .70) elements.edges[m].data.lineThickness = 15;
-          }
-        }
-
-        //loops through the json elements received through the AJAX call and assigns colors to the experiment types.
-        var colors = ['#2BAB2B', '#3366CC', '#B8008A', '#7634D9', '#FF8A14', '#FF0000', '#74F774', '#73A2FF', '#F28DD9', '#AF8DE0', '#FA9696', '#175E17', '#0A3180', '#69004E', '#400F8A', '#5C330A', '#730000'];
-        var experiments = [];
-        var colorsused = [];
-        var k = 0;
-        for (var i = 0; i < elements.edges.length; i++) {
-          var found = 0;
-          //find out whether this particular experiment has been assigned a color yet
-          for (var j = 0; j < experiments.length; j++) {
-            if (experiments[j] == elements.edges[i].data.humanReadable) {
-              found = 1;
-              elements.edges[i].data.lineColor = colorsused[j];
-            }
-          }
-
-          //if it's new give it a color, and add the new color and the corresponding experiment name to two arrays. They will be used to construct the graph key later.
-          //k is the counter to which colors have been used already. if the number of experiments is greater than the number of colors, the counter resets and it starts reusing colors.
-          if (experiments.indexOf(elements.edges[i].data.humanReadable) == -1) {
-            experiments.push(elements.edges[i].data.humanReadable);
-            colorsused.push(colors[k]);
-            elements.edges[i].data.lineColor = colors[k];
-            k++
-            if (k >= colors.length) k = 0;
-          }
-        }
-
-        keyInfo = {
-          colorsused: colorsused,
-          experiments: experiments
-        };
-        result = {
-          keyInfo: keyInfo,
-          elements: elements
-        };
-        return result;
-
-      }
-      //places key on the page
-      function buildKey(keyInfo) {
-        var experiments = keyInfo.experiments;
-        var colorsused = keyInfo.colorsused;
-        $('#colorkey').append('<b>Interaction determination by line color: <br></b>');
-        for (var i = 0; i < experiments.length; i++) {
-          $('#colorkey').append('<span style="color:' + colorsused[i] + '">' + experiments[i] + "</span><br>");
-        }
-
-        //and unhide the key
-        $('#outerkey').removeClass('hidden');
-
-      }
-      //called whenever there is a mouseover on an edge; shows the appropriate sort of mouseover - either tooltip or div.
-      function makeMouseover(target) {
-        if ($("input[name='edgedisplay']:checked").val() == 'tooltip') {
-          makeTooltips(target);
-
-        } else if ($("input[name='edgedisplay']:checked").val() == 'div') {
-          makeDiv(target);
-          $("#mouseover").removeClass('hidden');
-        }
-      }
-
-      //called whenever the mouse leaves an edge - hides whichever sort of mouseover is currently in use
-      function unmakeMouseover() {
-        if ($("input[name='edgedisplay']:checked").val() == 'tooltip') {
-          $("#cy").qtip('hide');
-        } else if ($("input[name='edgedisplay']:checked").val() == 'div') {
-          //$("#mouseover").addClass('hidden');
-        }
-      }
-
-      function makeDiv(target) {
-
-        var sourceName = target.data("source");
-        var targetName = target.data("target");
-        var experiment = target.data('humanReadable');
-        var CV = target.data('confidenceScore');
-        var publication = target.data('publication');
-        var firstAuthor = target.data('firstAuthor');
-        var sourceDatabase = target.data('sourceDatabase');
-        $("#mouseover").text('');
-        $("#mouseover").append("<b>Information about this edge</b> <br>Experiment: " + experiment + "<br>Confidence score: " + CV + "<br>First author: " + firstAuthor + "<br>Source Database: " + sourceDatabase + "<br>Publication: " + publication);
-
-
-      }
-
-
-      function makeTooltips(target) {
-        var sourceName = target.data("source");
-        var targetName = target.data("target");
-        var experiment = target.data('humanReadable');
-        var CV = target.data('confidenceScore');
-        var publication = target.data('publication');
-        var firstAuthor = target.data('firstAuthor');
-        var sourceDatabase = target.data('sourceDatabase');
-
-
-        var tooltips = $("#cy").qtip({
-          content: "Experiment: " + experiment + "<br>Confidence score: " + CV + "<br>First author: " + firstAuthor + "<br>Source Database: " + sourceDatabase + "<br>Publication: " + publication,
-          show: {
-            ready: true,
-            delay: 1000
-          },
-          hide: {
-            distance: 5,
-            event: 'click'
-          },
-
-          position: {
-            my: 'top center',
-            at: 'bottom center',
-            target: 'mouse',
-            adjust: {
-              mouse: false,
-              cyViewport: true
-            }
-          },
-          style: {
-            classes: 'qtip-bootstrap',
-            tip: {
-              width: 16,
-              height: 8
-            }
-          }
-        });
-
-        var api = tooltips.qtip('api');
-      }
-
-      //hides the old mouseover, so the new one can be unhidden and filled by makeMouseover()
-    $("input[name='edgedisplay']").change(function() {
-      if ($("input[name='edgedisplay']:checked").val() == 'tooltip') {
-        $("#mouseover").addClass('hidden');
-      } else if ($("input[name='edgedisplay']:checked").val() == 'div') {
-        $("#cy").qtip('disable');
-      }
-
-    });
-
-    $("#clearGraph").click(function() {
-      $("#cy").addClass('hidden');
-      $("#gene").val('');
-      $("#colorkey").text('');
-      $("#mouseover").text('');
-      $("#mouseover").addClass('hidden');
-      $("#key").text('');
-    });
-
-    var ajaxFail = function(url, errorType) {
-      $(".result").addClass("alert alert-danger");
-      $(".result").html("We could not load the gene data from " + url);
-      if (errorType != '') {
-        $(".result").append("<br>Error type: " + errorType);
-      }
-    };
-
-    ///Retrieves data, then parses it into a JSON file, containing all the information needed to construct the Cytoscape object.
-    $("#geneSubmit").click(function(e) {
-      $("#colorkey").text('');
-      $("#mouseover").text('');
-      $("#mouseover").addClass('hidden');
-
-      /////////////////////////////////hard-coded url for data file here, should be changed to point to the webservice supplying our data!
-      //	var url = "https://www.araport.org/apiproxy/BARClient/"+$("#gene").val();
-      var url = 'https://api.araport.org/data/EBI_IntAct/alpha/';
-      //////////////////////////////////////end hard coded url for data file
-
-
-
-      $(".result").removeClass("alert alert-danger");
-      var gene = $("#gene").val();
-      //did the user enter the name of a gene?
-      if (gene.length > 0) {
-        //perform ajax GET
-        var request = $.get(url + gene, function(data) { //success function
-          if (data.length <= 0) {
-            ajaxFail(url, '');
-          } else { //if data was retrieved
-            parseItToJSON(data);
-          }
-        }, "text");
-
-        request.error(function(jqXHR, textStatus, errorThrown) {
-          var errorType = '';
-
-          if (textStatus == 'timeout')
-            errorType = 'server is not responding';
-          else if (textStatus == 'error')
-            errorType = errorThrown;
-          ajaxFail(url, errorType);
-        });
-      } else {
-        alert("You must enter a gene first.");
-        return;
-      }
-    }); /// end gene submit function
-
-
-    var parseItToJSON = function(data) {
-      var nodes = [];
-      var proteins = [];
-      var edges = [];
-      var elements = {};
-      var gene = $("#gene").val();
-
-      data = data.split("\n");
-      for (var i = 0; i < data.length; i++) {
-        var line = data[i].split("\t");
-        if (line[0].length > 0) {
-          var p1 = line[0]
-          var p2 = line[1]
-          var p3 = line[6];
-          var p5 = line[14];
-          var p6 = line[7];
-          var p7 = line[8];
-          var p8 = line[12];
-          if (p3 != '-') {
-            p3 = line[6].replace('psi-mi:"MI:', '');
-            p4 = p3.slice(6, p3.indexOf(')'));
-            p3 = p3.slice(0, 4);
-          }
-          if (p5 != '-') {
-            p5 = line[14].substring(line[14].indexOf(':') + 1);
-          }
-          p6 = p6.replace('|', '; ');
-          var line2 = p7.split('|');
-          p7 = '';
-          for (var j = 0; j < line2.length; j++) {
-            var tmp = '';
-            tmp = line2[j].substring(line2[j].indexOf(':') + 1);
-            p7 = p7 + tmp;
-          }
-          p7 = p7.slice(0, p7.indexOf(';'));
-
-          var line3 = p8.split('|');
-          p8 = '';
-          for (var j = 0; j < line3.length; j++) {
-            var tmp = '';
-            tmp = line3[j].substring(line3[j].indexOf('(') + 1);
-            tmp = tmp.substring(0, tmp.length - 1);
-            p8 = p8 + tmp + '; ';
-          }
-          p8 = p8.slice(0, p8.indexOf(';'));
-
-          //add to "nodes" proteins array if not already in there
-          if (proteins.indexOf(p1) == -1) {
-            proteins.push(p1);
-            nodes.push({
-              data: {
-                id: p1,
-                name: p1
-              }
-            });
-          } else {
-            console.log('not added');
-          }
-          if (proteins.indexOf(p2) == -1) {
-            proteins.push(p2);
-            nodes.push({
-              data: {
-                id: p2,
-                name: p2
-              }
-            });
-          } else {
-            console.log('not added');
-          }
-
-
-          var duplicate = false;
-          for (var m = 0; m < edges.length; m++) {
-            if ((((p1 == edges[m].data.source) && (p2 == edges[m].data.target)) || ((p2 == edges[m].data.source) && (p1 == edges[m].data.target))) && (p3 == edges[m].data.lineColor) && (p5 == edges[m].data.confidenceScore)) {
-              duplicate = true;
-            }
-          }
-          if (!duplicate) {
-            edges.push({
-              data: {
-                source: p1,
-                target: p2,
-                lineColor: p3,
-                humanReadable: p4,
-                confidenceScore: p5,
-                lineThickness: '-',
-                firstAuthor: p6,
-                publication: p7,
-                sourceDatabase: p8
-              }
-            });
-          }
-        }
-      }
-
-      elements = {
-        nodes: nodes,
-        edges: edges
-      };
-      console.log(JSON.stringify(elements)); ///prints new JSON to the console.
-
-      render(elements);
-
-    }
-
-
-  }); //end Jquery functions
-</script>
+<script type="text/javascript" src="scripts/app.js"></script>
