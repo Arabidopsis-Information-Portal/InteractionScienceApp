@@ -5,6 +5,7 @@ module.exports = function(grunt) {
   require('load-grunt-tasks')(grunt);
 
   var config = {
+    appName: 'InteractionScienceApp',
     app: 'app',
     dist: 'dist'
   };
@@ -62,7 +63,8 @@ module.exports = function(grunt) {
 
     // Empties folders to start fresh
     clean: {
-      server: '.tmp'
+      server: '.tmp',
+      dist: 'dist'
     },
 
     // Make sure code styles are up to par and there are no obvious mistakes
@@ -89,6 +91,27 @@ module.exports = function(grunt) {
           silent: true,
         }
       }
+    },
+
+    copy: {
+      libraries: {
+        expand: true,
+        cwd: '<%= config.app %>/vendor',
+        src: '**',
+        dest: '.tmp/sites/all/libraries/<%= config.appName %>/'
+      }
+    },
+
+    inline: {
+      dist: {
+        src: ['app/app.html'],
+        dest: [ 'dist/' ],
+        options:{
+          cssmin: true,
+          uglify: true,
+          tag: ''
+        },
+      }
     }
   });
 
@@ -100,6 +123,7 @@ module.exports = function(grunt) {
     grunt.task.run([
       'clean:server',
       'includes',
+      'copy',
       'connect:livereload',
       'watch'
     ]);
@@ -110,12 +134,15 @@ module.exports = function(grunt) {
     grunt.task.run([target ? ('serve:' + target) : 'serve']);
   });
 
-  grunt.registerTask('default', [
-    'serve'
-  ]);
+  grunt.registerTask('default', 'serve');
 
   grunt.registerTask('test', [
     'jshint'
+  ]);
+
+  grunt.registerTask('dist', [
+    'clean:dist',
+    'inline'
   ]);
 
 };

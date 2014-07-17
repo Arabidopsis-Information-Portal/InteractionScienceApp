@@ -19,8 +19,8 @@
   init = function init() {
     var el, i, cytoscapeJsUrl, arborJsUrl, reCytoscape, reArbor, hasCytoscape, hasArbor, allScripts;
 
-    cytoscapeJsUrl = 'vendor/cytoscape.js';
-    arborJsUrl = 'vendor/arbor.js';
+    cytoscapeJsUrl = 'sites/all/libraries/InteractionScienceApp/cytoscape.js/cytoscape.min.js';
+    arborJsUrl = 'sites/all/libraries/InteractionScienceApp/cytoscape.js/arbor.js';
 
     hasCytoscape = hasArbor = false;
     reCytoscape = new RegExp( cytoscapeJsUrl );
