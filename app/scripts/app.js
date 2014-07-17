@@ -7,7 +7,7 @@
  */
 (function(window, $, undefined) {
 
-  var log, init, DEBUG;
+  var DEBUG, log, init, assignViewOptions, renderCytoscape, renderLegend, getEdgeInfo, ajaxFail, parseItToJSON;
 
   DEBUG = true;
   log = function log( message ) {
@@ -50,7 +50,7 @@
     }
   };
 
-  var assignViewOptions = function( elements ) {
+  assignViewOptions = function assignViewOptions( elements ) {
     var colors, experiments, colorsused, fontSize, i, j, k, m, found;
 
     for ( m = 0; m < elements.edges.length; m++ ) {
@@ -151,7 +151,7 @@
    * Loads Cy from the JSON received; assigns view options based on this data,
    * and constructs the Cytoscape object.
    */
-  var renderCytoscape = function renderCytoscape(view) {
+  renderCytoscape = function renderCytoscape(view) {
 
     $('#ebi_iv_cy').cytoscape({
       layout: {
@@ -230,11 +230,13 @@
 
         //on mouseover/mouseout, display and hide the appropriate type of mouseover (by calling the makeMouseover()/unmakeMouseover() functions)
         cy.on('mouseover', 'edge', function( e ) {
-          makeMouseover( e.cyTarget );
+          var tip = $('#ebi_iv_tooltip');
+          tip.html(getEdgeInfo(e.cyTarget));
+          tip.show();
         });
 
         cy.on('mouseout', 'edge', function() {
-          unmakeMouseover();
+          $('#ebi_iv_tooltip').hide();
         });
       }, //end ready function
     }); //end Cytoscape object options
@@ -245,7 +247,7 @@
   }; //end render()
 
   //places key on the page
-  var renderLegend = function renderLegend(keyInfo) {
+  renderLegend = function renderLegend(keyInfo) {
     var experiments, colorsused, key, i, ul;
 
     experiments = keyInfo.experiments;
@@ -262,32 +264,7 @@
     $('#ebi_iv_legend').removeClass('hidden');
   };
 
-  //called whenever there is a mouseover on an edge; shows the appropriate sort of mouseover - either tooltip or div.
-  var makeMouseover = function makeMouseover(target) {
-    var tip = $('#ebi_iv_tooltip');
-    if (tip.hasClass('static')) {
-      tip.html(getEdgeInfo(target));
-      tip.show();
-    } else {
-      tip.empty();
-      tip.tooltip({
-        html: true,
-        title: getEdgeInfo(target)
-      })
-      .tooltip('show');
-    }
-  };
-
-  var unmakeMouseover = function unmakeMouseover() {
-    var tip = $('#ebi_iv_tooltip');
-    if (tip.hasClass('static')) {
-      tip.hide();
-    } else {
-      tip.tooltip('destroy');
-    }
-  };
-
-  var getEdgeInfo = function getEdgeInfo(target) {
+  getEdgeInfo = function getEdgeInfo(target) {
     // var sourceName = target.data('source');
     // var targetName = target.data('target');
     var experiment = target.data('humanReadable');
@@ -305,7 +282,7 @@
       '</dd></dl>';
   };
 
-  var ajaxFail = function(url, errorType) {
+  ajaxFail = function ajaxFail(url, errorType) {
     $('.result').addClass('alert alert-danger');
     $('.result').html('We could not load the gene data from ' + url);
     if (errorType !== '') {
@@ -313,7 +290,7 @@
     }
   };
 
-  var parseItToJSON = function(data) {
+  parseItToJSON = function parseItToJSON(data) {
     var nodes, proteins, edges, elements, view, line, line2, line3, tmp, p1, p2, p3, p4, p5, p6, p7, p8, i, j;
 
     nodes = [];
@@ -429,15 +406,6 @@
   /* go! */
   init();
 
-  //hides the old mouseover, so the new one can be unhidden and filled by makeMouseover()
-  $('input[name="edgedisplay"]').on('change', function() {
-    if ($('input[name="edgedisplay"]:checked').val() === 'div') {
-      $('#ebi_ib_tooltip').addClass('static');
-    } else {
-      $('#ebi_ib_tooltip').removeClass('static');
-    }
-  });
-
   $('#ebi_iv_gene_form_reset').on('click', function() {
     $('#ebi_iv_cy').addClass('hidden');
     $('#ebi_iv_gene').val('');
@@ -445,16 +413,14 @@
     $('#ebi_iv_tooltip').empty();
   });
 
-  ///Retrieves data, then parses it into a JSON file, containing all the information needed to construct the Cytoscape object.
+  /*
+   * Retrieves data, then parses it into a JSON file, containing all the
+   * information needed to construct the Cytoscape object.
+   */
   $( 'form[name=ebi_iv_gene_form]' ).on( 'submit', function( e ) {
     e.preventDefault();
-    $('#colorkey').empty();
-    $('#ebi_iv_tooltip').empty();
 
-    /////////////////////////////////hard-coded url for data file here, should be changed to point to the webservice supplying our data!
-    //	var url = 'https://www.araport.org/apiproxy/BARClient/'+$('#gene').val();
     var url = 'https://api.araport.org/data/EBI_IntAct/alpha/';
-    //////////////////////////////////////end hard coded url for data file
 
     $('.result').removeClass('alert alert-danger');
     var gene = $('#ebi_iv_gene').val();
