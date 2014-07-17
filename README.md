@@ -13,15 +13,12 @@ You need to have the following installed:
 - grunt
   - `npm install -g grunt-cli`
 
-After those are installed, close this repo, cd into the direction, and run:
+After those are installed, clone this repo, cd into the directory, and run:
 
 ```
+git clone https://github.com/Arabidopsis-Information-Portal/InteractionScienceApp.git
+cd InteractionScienceApp
 npm install
-```
-
-You can run the test runner with
-
-```
 grunt
 ```
 
