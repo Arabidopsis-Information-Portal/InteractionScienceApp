@@ -5,69 +5,53 @@
  * Tests to see if cytoscape.js and arbor.js are already available on the page.
  * If not, it adds them by appending to document.body.
  */
-(function() {
-  var el, i, cytoscapeJsUrl, arborJsUrl, reCytoscape, reArbor, hasCytoscape, hasArbor, allScripts, log;
+(function(window, $, undefined) {
 
-  var DEBUG = true;
-  log = function( message ) {
+  var log, init, DEBUG;
+
+  DEBUG = true;
+  log = function log( message ) {
     if ( DEBUG ) {
       console.log( message );
     }
   };
 
-  cytoscapeJsUrl = 'vendor/cytoscape.js';
-  arborJsUrl = 'vendor/arbor.js';
+  init = function init() {
+    var el, i, cytoscapeJsUrl, arborJsUrl, reCytoscape, reArbor, hasCytoscape, hasArbor, allScripts;
 
-  hasCytoscape = hasArbor = false;
-  reCytoscape = new RegExp( cytoscapeJsUrl );
-  reArbor = new RegExp( arborJsUrl );
-  allScripts = document.querySelectorAll( 'script' );
+    cytoscapeJsUrl = 'vendor/cytoscape.js';
+    arborJsUrl = 'vendor/arbor.js';
 
-  for ( i = 0; i < allScripts.length && !( hasCytoscape && hasArbor ); i++ ) {
-    hasCytoscape = hasCytoscape || reCytoscape.test( allScripts[i].src );
-    hasArbor = hasArbor || reCytoscape.test( allScripts[i].src );
-  }
+    hasCytoscape = hasArbor = false;
+    reCytoscape = new RegExp( cytoscapeJsUrl );
+    reArbor = new RegExp( arborJsUrl );
+    allScripts = document.querySelectorAll( 'script' );
 
-  if ( !hasCytoscape ) {
-    log( 'adding Cytoscape.js' );
+    for ( i = 0; i < allScripts.length && !( hasCytoscape && hasArbor ); i++ ) {
+      hasCytoscape = hasCytoscape || reCytoscape.test( allScripts[i].src );
+      hasArbor = hasArbor || reCytoscape.test( allScripts[i].src );
+    }
 
-    el = document.createElement( 'script' );
-    el.src = cytoscapeJsUrl;
-    el.type = 'text/javascript';
-    document.body.appendChild( el );
-  }
-  if (! hasArbor) {
-    log( 'adding Arbor.js' );
+    if ( !hasCytoscape ) {
+      log( 'adding Cytoscape.js' );
 
-    el = document.createElement( 'script' );
-    el.src = arborJsUrl;
-    el.type = 'text/javascript';
-    document.body.appendChild( el );
-  }
-})();
+      el = document.createElement( 'script' );
+      el.src = cytoscapeJsUrl;
+      el.type = 'text/javascript';
+      document.body.appendChild( el );
+    }
+    if (! hasArbor) {
+      log( 'adding Arbor.js' );
 
-jQuery(function($) {
-
-  var DEBUG = true;
-  var log = function( message ) {
-    if ( DEBUG ) {
-      console.log( message );
+      el = document.createElement( 'script' );
+      el.src = arborJsUrl;
+      el.type = 'text/javascript';
+      document.body.appendChild( el );
     }
   };
-
-  // String.prototype.hashCode = function() {
-  //   var hash = 0;
-  //   if (this.length === 0) return hash;
-  //   for (i = 0; i < this.length; i++) {
-  //     char = this.charCodeAt(i);
-  //     hash = ((hash << 5) - hash) + char;
-  //     hash = hash & hash; // Convert to 32bit integer
-  //   }
-  //   return hash;
-  // }
 
   var assignViewOptions = function( elements ) {
-    var colors, experiments, colorsused, i, j, k, m, found;
+    var colors, experiments, colorsused, fontSize, i, j, k, m, found;
 
     for ( m = 0; m < elements.edges.length; m++ ) {
       if ( elements.edges[ m ].data.confidenceScore !== '-' ) {
@@ -105,6 +89,24 @@ jQuery(function($) {
     colorsused = [];
     k = 0;
 
+    /*
+     * based on the number of nodes, changes up the font size - otherwise the
+     * edge labels make it impossible to see the nodes, which is annoying
+     */
+    fontSize = 10;
+    if (elements.nodes.length < 25) {
+      fontSize = 20;
+    }
+    else if (elements.nodes.length >= 25 && elements.nodes.length < 50) {
+      fontSize = 15;
+    }
+    else if (elements.nodes.length >= 50 && elements.nodes.length < 100) {
+      fontSize = 12;
+    }
+    else if (elements.nodes.length >= 100) {
+      fontSize = 9;
+    }
+
     for ( i = 0; i < elements.edges.length; i++ ) {
       // find out whether this particular experiment has been assigned a color yet
       found = 0;
@@ -140,6 +142,7 @@ jQuery(function($) {
         colorsused: colorsused,
         experiments: experiments
       },
+      fontSize: fontSize,
       elements: elements
     };
   };
@@ -148,34 +151,9 @@ jQuery(function($) {
    * Loads Cy from the JSON received; assigns view options based on this data,
    * and constructs the Cytoscape object.
    */
-  var render = function(elements) {
-    //takes data structure, and assigns
-    var result = assignViewOptions(elements);
-    elements = result.elements;
-    var keyInfo = result.keyInfo;
-    buildKey(keyInfo);
+  var renderCytoscape = function renderCytoscape(view) {
 
-
-    //based on the number of nodes, changes up the font size - otherwise the edge labels make it impossible to see the nodes, which is annoying
-    var fontSize = 10;
-    if (elements.nodes.length < 25) {
-      fontSize = 20;
-    }
-    else if (elements.nodes.length >= 25 && elements.nodes.length < 50) {
-      fontSize = 15;
-    }
-    else if (elements.nodes.length >= 50 && elements.nodes.length < 100) {
-      fontSize = 12;
-    }
-    else if (elements.nodes.length >= 100) {
-      fontSize = 9;
-    }
-
-
-
-    //now construct the Cytoscape object
-
-    $('#cy').cytoscape({
+    $('#ebi_iv_cy').cytoscape({
       layout: {
         name: 'arbor',
         liveUpdate: true,
@@ -204,7 +182,7 @@ jQuery(function($) {
           'content': 'data(name)',
           'text-valign': 'center',
           'color': 'white',
-          'font-size': fontSize,
+          'font-size': view.fontSize,
           'text-outline-width': 2,
           'text-outline-color': '#888'
         })
@@ -226,8 +204,9 @@ jQuery(function($) {
           'text-opacity': 0
         }),
 
-      elements: elements,
-      //bind functions to various events - notably, the mouseover tooltips
+      elements: view.elements,
+
+      // bind functions to various events - notably, the mouseover tooltips
       ready: function() {
         var cy = this;
 
@@ -250,9 +229,8 @@ jQuery(function($) {
         });
 
         //on mouseover/mouseout, display and hide the appropriate type of mouseover (by calling the makeMouseover()/unmakeMouseover() functions)
-        cy.on('mouseover', 'edge', function(event) {
-          var target = event.cyTarget;
-          makeMouseover(target);
+        cy.on('mouseover', 'edge', function( e ) {
+          makeMouseover( e.cyTarget );
         });
 
         cy.on('mouseout', 'edge', function() {
@@ -261,44 +239,55 @@ jQuery(function($) {
       }, //end ready function
     }); //end Cytoscape object options
 
-    $('#cy').removeClass('hidden');
+    // display cytoscape div
+    $('#ebi_iv_cy').removeClass('hidden');
+
   }; //end render()
 
   //places key on the page
-  var buildKey = function(keyInfo) {
-    var experiments = keyInfo.experiments;
-    var colorsused = keyInfo.colorsused;
-    $('#colorkey').append('<b>Interaction determination by line color: <br></b>');
-    for (var i = 0; i < experiments.length; i++) {
-      $('#colorkey').append('<span style="color:' + colorsused[i] + '">' + experiments[i] + '</span><br>');
+  var renderLegend = function renderLegend(keyInfo) {
+    var experiments, colorsused, key, i, ul;
+
+    experiments = keyInfo.experiments;
+    colorsused = keyInfo.colorsused;
+    key = $('#ebi_iv_colors');
+
+    key.append('<h5>Interaction determination by line color</h5>');
+    ul = $('<ul>');
+    for ( i = 0; i < experiments.length; i++ ) {
+      ul.append('<li style="color:' + colorsused[i] + '">' + experiments[i] + '</li>');
     }
+    key.append(ul);
 
-    //and unhide the key
-    $('#outerkey').removeClass('hidden');
-
+    $('#ebi_iv_legend').removeClass('hidden');
   };
 
   //called whenever there is a mouseover on an edge; shows the appropriate sort of mouseover - either tooltip or div.
-  var makeMouseover = function(target) {
-    if ($('input[name="edgedisplay"]:checked').val() === 'tooltip') {
-      makeTooltips(target);
-
-    } else if ($('input[name="edgedisplay"]:checked').val() === 'div') {
-      makeDiv(target);
-      $('#mouseover').removeClass('hidden');
+  var makeMouseover = function makeMouseover(target) {
+    var tip = $('#ebi_iv_tooltip');
+    if (tip.hasClass('static')) {
+      tip.html(getEdgeInfo(target));
+      tip.show();
+    } else {
+      tip.empty();
+      tip.tooltip({
+        html: true,
+        title: getEdgeInfo(target)
+      })
+      .tooltip('show');
     }
   };
 
-  //called whenever the mouse leaves an edge - hides whichever sort of mouseover is currently in use
-  var unmakeMouseover = function() {
-    if ($('input[name="edgedisplay"]:checked').val() === 'tooltip') {
-      $('#cy').qtip('hide');
-    } else if ($('input[name="edgedisplay"]:checked').val() === 'div') {
-      //$('#mouseover').addClass('hidden');
+  var unmakeMouseover = function unmakeMouseover() {
+    var tip = $('#ebi_iv_tooltip');
+    if (tip.hasClass('static')) {
+      tip.hide();
+    } else {
+      tip.tooltip('destroy');
     }
   };
 
-  var makeDiv = function(target) {
+  var getEdgeInfo = function getEdgeInfo(target) {
     // var sourceName = target.data('source');
     // var targetName = target.data('target');
     var experiment = target.data('humanReadable');
@@ -306,66 +295,15 @@ jQuery(function($) {
     var publication = target.data('publication');
     var firstAuthor = target.data('firstAuthor');
     var sourceDatabase = target.data('sourceDatabase');
-    $('#mouseover').text('');
-    $('#mouseover').append('<b>Information about this edge</b> <br>Experiment: ' + experiment + '<br>Confidence score: ' + CV + '<br>First author: ' + firstAuthor + '<br>Source Database: ' + sourceDatabase + '<br>Publication: ' + publication);
+
+    return '<dl class="dl-horizontal">' +
+      '<dt>Experiment</dt><dd>' + experiment +
+      '</dd><dt>Confidence score</dt><dd>' + CV +
+      '</dd><dt>First author</dt><dd>' + firstAuthor +
+      '</dd><dt>Source Database</dt><dd>' + sourceDatabase +
+      '</dd><dt>Publication</dt><dd>' + publication +
+      '</dd></dl>';
   };
-
-  var makeTooltips = function(target) {
-    // var sourceName = target.data('source');
-    // var targetName = target.data('target');
-    var experiment = target.data('humanReadable');
-    var CV = target.data('confidenceScore');
-    var publication = target.data('publication');
-    var firstAuthor = target.data('firstAuthor');
-    var sourceDatabase = target.data('sourceDatabase');
-
-
-    $('#cy').qtip({
-      content: 'Experiment: ' + experiment + '<br>Confidence score: ' + CV + '<br>First author: ' + firstAuthor + '<br>Source Database: ' + sourceDatabase + '<br>Publication: ' + publication,
-      show: {
-        ready: true,
-        delay: 500
-      },
-      hide: {
-        distance: 5,
-        event: 'click'
-      },
-
-      position: {
-        my: 'top center',
-        at: 'bottom center',
-        target: 'mouse',
-        adjust: {
-          mouse: false,
-          cyViewport: true
-        }
-      },
-      style: {
-        classes: 'qtip-bootstrap',
-        tip: {
-          width: 16,
-          height: 8
-        }
-      }
-    });
-  };
-
-  //hides the old mouseover, so the new one can be unhidden and filled by makeMouseover()
-  $('input[name="edgedisplay"]').change(function() {
-    if ($('input[name="edgedisplay"]:checked').val() === 'tooltip') {
-      $('#mouseover').addClass('hidden');
-    } else if ($('input[name="edgedisplay"]:checked').val() === 'div') {
-      $('#cy').qtip('disable');
-    }
-  });
-
-  $('#ebi_iv_gene_form_reset').on('click', function() {
-    $('#cy').addClass('hidden');
-    $('#ebi_iv_gene').val('');
-    $('#colorkey').text('');
-    $('#mouseover').text('');
-    $('#mouseover').addClass('hidden');
-  });
 
   var ajaxFail = function(url, errorType) {
     $('.result').addClass('alert alert-danger');
@@ -375,59 +313,12 @@ jQuery(function($) {
     }
   };
 
-  ///Retrieves data, then parses it into a JSON file, containing all the information needed to construct the Cytoscape object.
-  $( 'form[name=ebi_iv_gene_form]' ).on( 'submit', function( e ) {
-    e.preventDefault();
-    $('#colorkey').text('');
-    $('#mouseover').text('');
-    $('#mouseover').addClass('hidden');
-
-    /////////////////////////////////hard-coded url for data file here, should be changed to point to the webservice supplying our data!
-    //	var url = 'https://www.araport.org/apiproxy/BARClient/'+$('#gene').val();
-    var url = 'https://api.araport.org/data/EBI_IntAct/alpha/';
-    //////////////////////////////////////end hard coded url for data file
-
-
-
-    $('.result').removeClass('alert alert-danger');
-    var gene = $('#ebi_iv_gene').val();
-    //did the user enter the name of a gene?
-    if (gene.length > 0) {
-      //perform ajax GET
-      var request = $.get(url + gene, function(data) { //success function
-        if (data.length <= 0) {
-          ajaxFail(url, '');
-        } else { //if data was retrieved
-          parseItToJSON(data);
-        }
-      }, 'text');
-
-      request.error(function(jqXHR, textStatus, errorThrown) {
-        var errorType = '';
-
-        if (textStatus === 'timeout') {
-          errorType = 'server is not responding';
-        }
-        else if (textStatus === 'error') {
-          errorType = errorThrown;
-        }
-        ajaxFail(url, errorType);
-      });
-    } else {
-      window.alert('You must enter a gene first.');
-      return;
-    }
-  }); /// end gene submit function
-
   var parseItToJSON = function(data) {
-    var nodes = [];
-    var proteins = [];
-    var edges = [];
-    var elements = {};
+    var nodes, proteins, edges, elements, view, line, line2, line3, tmp, p1, p2, p3, p4, p5, p6, p7, p8, i, j;
 
-    var line, line2, line3, tmp, p1, p2, p3, p4, p5, p6, p7, p8;
-
-    var i, j;
+    nodes = [];
+    proteins = [];
+    edges = [];
 
     data = data.split( '\n' );
     for ( i = 0; i < data.length; i++ ) {
@@ -523,8 +414,76 @@ jQuery(function($) {
       edges: edges
     };
 
-    log(JSON.stringify(elements)); ///prints new JSON to the console.
+    log(elements); ///prints new JSON to the console.
 
-    render(elements);
+    // font size, color
+    view = assignViewOptions(elements);
+
+    // render legend
+    renderLegend(view.keyInfo);
+
+    // render cytoscape
+    renderCytoscape(view);
   };
-}); //end Jquery functions
+
+  /* go! */
+  init();
+
+  //hides the old mouseover, so the new one can be unhidden and filled by makeMouseover()
+  $('input[name="edgedisplay"]').on('change', function() {
+    if ($('input[name="edgedisplay"]:checked').val() === 'div') {
+      $('#ebi_ib_tooltip').addClass('static');
+    } else {
+      $('#ebi_ib_tooltip').removeClass('static');
+    }
+  });
+
+  $('#ebi_iv_gene_form_reset').on('click', function() {
+    $('#ebi_iv_cy').addClass('hidden');
+    $('#ebi_iv_gene').val('');
+    $('#colorkey').empty();
+    $('#ebi_iv_tooltip').empty();
+  });
+
+  ///Retrieves data, then parses it into a JSON file, containing all the information needed to construct the Cytoscape object.
+  $( 'form[name=ebi_iv_gene_form]' ).on( 'submit', function( e ) {
+    e.preventDefault();
+    $('#colorkey').empty();
+    $('#ebi_iv_tooltip').empty();
+
+    /////////////////////////////////hard-coded url for data file here, should be changed to point to the webservice supplying our data!
+    //	var url = 'https://www.araport.org/apiproxy/BARClient/'+$('#gene').val();
+    var url = 'https://api.araport.org/data/EBI_IntAct/alpha/';
+    //////////////////////////////////////end hard coded url for data file
+
+    $('.result').removeClass('alert alert-danger');
+    var gene = $('#ebi_iv_gene').val();
+    //did the user enter the name of a gene?
+    if (gene.length > 0) {
+      //perform ajax GET
+      var request = $.get(url + gene, function(data) { //success function
+        if (data.length <= 0) {
+          ajaxFail(url, '');
+        } else { //if data was retrieved
+          parseItToJSON(data);
+        }
+      }, 'text');
+
+      request.error(function(jqXHR, textStatus, errorThrown) {
+        var errorType = '';
+
+        if (textStatus === 'timeout') {
+          errorType = 'server is not responding';
+        }
+        else if (textStatus === 'error') {
+          errorType = errorThrown;
+        }
+        ajaxFail(url, errorType);
+      });
+    } else {
+      window.alert('You must enter a gene first.');
+      return;
+    }
+  }); /// end gene submit function
+
+})(window, jQuery);
