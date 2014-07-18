@@ -384,7 +384,8 @@
       $(".result").html("We could not load the gene data from " + url);
       if (errorType != '') {
         $(".result").append("<br>Error type: " + errorType);
-      }
+        $("#cy").addClass('hidden');
+        console.log("I can has a JSON fail");}
     };
 
     ///Retrieves data, then parses it into a JSON file, containing all the information needed to construct the Cytoscape object.
@@ -418,9 +419,11 @@
 
           if (textStatus == 'timeout')
             errorType = 'server is not responding';
-          else if (textStatus == 'error')
+        if (textStatus == 'error'){
             errorType = errorThrown;
           ajaxFail(url, errorType);
+          }
+        $('#cy').removeClass('hidden');
         });
       } else {
         alert("You must enter a gene first.");
@@ -528,7 +531,7 @@
         nodes: nodes,
         edges: edges
       };
-      console.log(JSON.stringify(elements)); ///prints new JSON to the console.
+     // console.log(JSON.stringify(elements)); ///prints new JSON to the console.
 
       render(elements);
 
