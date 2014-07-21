@@ -409,8 +409,10 @@
   $('#ebi_iv_gene_form_reset').on('click', function() {
     $('#ebi_iv_cy').addClass('hidden');
     $('#ebi_iv_gene').val('');
-    $('#colorkey').empty();
+    $('#ebi_iv_colors').empty();
+    $('#ebi_iv_legend').hide();
     $('#ebi_iv_tooltip').empty();
+    $('.result').empty();
   });
 
   /*
@@ -422,7 +424,7 @@
 
     var url = 'https://api.araport.org/data/EBI_IntAct/alpha/';
 
-    $('.result').removeClass('alert alert-danger');
+    $('.result').empty();
     var gene = $('#ebi_iv_gene').val();
     //did the user enter the name of a gene?
     if (gene.length > 0) {
