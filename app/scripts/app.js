@@ -253,7 +253,7 @@
     experiments = keyInfo.experiments;
     colorsused = keyInfo.colorsused;
     key = $('#ebi_iv_colors');
-
+    key.empty();
     key.append('<h5>Interaction determination by line color</h5>');
     ul = $('<ul>');
     for ( i = 0; i < experiments.length; i++ ) {
@@ -297,9 +297,9 @@
     proteins = [];
     edges = [];
 
-    data = data.split( '\n' );
+    data = data.split( /\n/ );
     for ( i = 0; i < data.length; i++ ) {
-      line = data[ i ].split( '\t' );
+      line = data[ i ].split( /\t/ );
       if ( line[ 0 ].length > 0 ) {
         p1 = line[ 0 ];
         p2 = line[ 1 ];
@@ -310,13 +310,13 @@
         p8 = line[ 12 ];
 
         if ( p3 !== '-' ) {
-          p3 = line[ 6 ].replace( 'psi-mi:"MI:', '' );
+          p3 = p3.replace( 'psi-mi:"MI:', '' );
           p4 = p3.slice( 6, p3.indexOf( ')' ) );
           p3 = p3.slice( 0, 4 );
         }
 
         if ( p5 !== '-' ) {
-          p5 = line[ 14 ].substring( line[ 14 ].indexOf( ':' ) + 1 );
+          p5 = p5.substring( p5.indexOf( ':' ) + 1 );
         }
 
         p6 = p6.replace( '|', '; ' );
