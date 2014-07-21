@@ -404,54 +404,58 @@
   };
 
   /* go! */
-  init();
+  if (! $('#ebi_iv').hasClass('ebi-iv-processed') ) {
+    // prevent duplicate initialization
+    $('#ebi_iv').addClass('ebi-iv-processed');
 
-  $('#ebi_iv_gene_form_reset').on('click', function() {
-    $('#ebi_iv_cy').addClass('hidden');
-    $('#ebi_iv_gene').val('');
-    $('#ebi_iv_colors').empty();
-    $('#ebi_iv_legend').hide();
-    $('#ebi_iv_tooltip').empty();
-    $('.result').empty();
-  });
+    init();
 
-  /*
-   * Retrieves data, then parses it into a JSON file, containing all the
-   * information needed to construct the Cytoscape object.
-   */
-  $( 'form[name=ebi_iv_gene_form]' ).on( 'submit', function( e ) {
-    e.preventDefault();
+    $('#ebi_iv_gene_form_reset').on('click', function() {
+      $('#ebi_iv_cy').addClass('hidden');
+      $('#ebi_iv_gene').val('');
+      $('#ebi_iv_legend').addClass('hidden');
+      $('#ebi_iv_colors').empty();
+      $('#ebi_iv_tooltip').empty();
+      $('.result').empty();
+    });
 
-    var url = 'https://api.araport.org/data/EBI_IntAct/alpha/';
+    /*
+     * Retrieves data, then parses it into a JSON file, containing all the
+     * information needed to construct the Cytoscape object.
+     */
+    $( 'form[name=ebi_iv_gene_form]' ).on( 'submit', function( e ) {
+      e.preventDefault();
 
-    $('.result').empty();
-    var gene = $('#ebi_iv_gene').val();
-    //did the user enter the name of a gene?
-    if (gene.length > 0) {
-      //perform ajax GET
-      var request = $.get(url + gene, function(data) { //success function
-        if (data.length <= 0) {
-          ajaxFail(url, '');
-        } else { //if data was retrieved
-          parseItToJSON(data);
-        }
-      }, 'text');
+      var url = 'https://api.araport.org/data/EBI_IntAct/alpha/';
 
-      request.error(function(jqXHR, textStatus, errorThrown) {
-        var errorType = '';
+      $('.result').empty();
+      var gene = $('#ebi_iv_gene').val();
+      //did the user enter the name of a gene?
+      if (gene.length > 0) {
+        //perform ajax GET
+        var request = $.get(url + gene, function(data) { //success function
+          if (data.length <= 0) {
+            ajaxFail(url, '');
+          } else { //if data was retrieved
+            parseItToJSON(data);
+          }
+        }, 'text');
 
-        if (textStatus === 'timeout') {
-          errorType = 'server is not responding';
-        }
-        else if (textStatus === 'error') {
-          errorType = errorThrown;
-        }
-        ajaxFail(url, errorType);
-      });
-    } else {
-      window.alert('You must enter a gene first.');
-      return;
-    }
-  }); /// end gene submit function
+        request.error(function(jqXHR, textStatus, errorThrown) {
+          var errorType = '';
+
+          if (textStatus === 'timeout') {
+            errorType = 'server is not responding';
+          }
+          else if (textStatus === 'error') {
+            errorType = errorThrown;
+          }
+          ajaxFail(url, errorType);
+        });
+      } else {
+        window.alert('You must enter a gene first.');
+      }
+    }); /// end gene submit function
+  }
 
 })(window, jQuery);
