@@ -7,7 +7,7 @@
  */
 (function(window, $, undefined) {
 
-  var DEBUG, log, init, assignViewOptions, renderCytoscape, renderLegend, getEdgeInfo, ajaxFail, parseItToJSON;
+  var DEBUG, log, init, assignViewOptions, renderCytoscape, renderLegend, getEdgeInfo, ajaxFail, parseItToJSON, getHashCode, isEdgeDuplicate;
 
   DEBUG = true;
   log = function log( message ) {
@@ -49,7 +49,16 @@
       document.body.appendChild( el );
     }
   };
-
+getHashCode = function getHashCode(target){
+ var hash = 0;
+    if (target.length == 0) return hash;
+    for (var i = 0; i < target.length; i++) {
+        var char = target.charCodeAt(i);
+        hash = ((hash<<5)-hash)+char;
+        hash = hash & hash; // Convert to 32bit integer
+    }
+    return hash;
+};
   assignViewOptions = function assignViewOptions( elements ) {
     var colors, experiments, colorsused, fontSize, i, j, k, m, found;
 
@@ -289,10 +298,44 @@
       $('.result').append('<br>Error type: ' + errorType);
     }
   };
+  
+  isEdgeDuplicate = function isEdgeDuplicate(hashTable, p1, p2, p3, p5,fast){
+   var duplicate;
+   
+  if (fast == true) {var stringToBeHashed;
+        if (p1 > p2) stringToBeHashed = p1 + p2;
+        else stringToBeHashed = p2 + p1;
+        stringToBeHashed = stringToBeHashed = stringToBeHashed + p3 + p5;
+        console.log(stringToBeHashed);
+        var hashedString = getHashCode(stringToBeHashed);
+        var modHashedString = hashedString % hashTable.length;
+        
+        if (hashTable[modHashedString] == stringToBeHashed){ duplicate = true;
+        console.log('duplicate');}
+        else if (hashTable[modHashedString] != null){
+        console.log('collision');//collision: same hash, different value, need linked lists here
+        duplicate = false;}
+        else {
+        console.log("new");
+        hashTable[modHashedString] = stringToBeHashed; 
+        duplicate = false;
+        }}
+        //slow de-duper, used for debugging purposes
+    else if (fast == false){
+    duplicate = false;
+     for (var m = 0; m < edges.length; m++) {
+        if ((((p1 === edges[m].data.source) && (p2 === edges[m].data.target)) || ((p2 === edges[m].data.source) && (p1 === edges[m].data.target))) && (p3 === edges[m].data.lineColor) && (p5 === edges[m].data.confidenceScore)) {
+         duplicate = true;
+         }
+       }}
+        
+  return duplicate;
+  }
 
   parseItToJSON = function parseItToJSON(data) {
-    var nodes, proteins, edges, elements, view, line, line2, line3, tmp, p1, p2, p3, p4, p5, p6, p7, p8, i, j;
-
+    var nodes, proteins, edges, elements, view, line, line2, line3, tmp, p1, p2, p3, p4, p5, p6, p7, p8, i, j, hashTable;
+	hashTable = [];
+	hashTable.length = 1000;
     nodes = [];
     proteins = [];
     edges = [];
@@ -363,11 +406,15 @@
 
 
         var duplicate = false;
-        for (var m = 0; m < edges.length; m++) {
-          if ((((p1 === edges[m].data.source) && (p2 === edges[m].data.target)) || ((p2 === edges[m].data.source) && (p1 === edges[m].data.target))) && (p3 === edges[m].data.lineColor) && (p5 === edges[m].data.confidenceScore)) {
-            duplicate = true;
-          }
-        }
+        
+        duplicate = isEdgeDuplicate(hashTable, p1, p2, p3, p5, true);
+        
+        
+        //dumb de-duper - now unnecessary
+      
+        //end dumb de-duper
+        
+        
         if (!duplicate) {
           edges.push({
             data: {
@@ -385,6 +432,8 @@
         }
       }
     }
+    
+    console.log("foo:" + hashTable);
 
     elements = {
       nodes: nodes,
