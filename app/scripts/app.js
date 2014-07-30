@@ -145,6 +145,10 @@ getHashCode = function getHashCode(target){
         }
       }
     }
+    console.log(JSON.stringify(elements));
+    
+    ///just duplicate the above code for elements.nodes[i].data.nodeColor to create a 
+    ///key for node color and cellular localization
 
     return {
       keyInfo: {
@@ -193,7 +197,8 @@ getHashCode = function getHashCode(target){
           'color': 'white',
           'font-size': view.fontSize,
           'text-outline-width': 2,
-          'text-outline-color': '#888'
+          'text-outline-color': '#888',
+          'background-color':'data(nodeColor)'
         })
         .selector('edge')
         .css({
@@ -335,7 +340,7 @@ getHashCode = function getHashCode(target){
   parseItToJSON = function parseItToJSON(data) {
     var nodes, proteins, edges, elements, view, line, line2, line3, tmp, p1, p2, p3, p4, p5, p6, p7, p8, i, j, hashTable;
 	hashTable = [];
-	hashTable.length = 1000;
+	hashTable.length = 100000;
     nodes = [];
     proteins = [];
     edges = [];
@@ -386,7 +391,9 @@ getHashCode = function getHashCode(target){
           nodes.push({
             data: {
               id: p1,
-              name: p1
+              name: p1,
+              nodeColor: 'grey',
+              cellPart: '-'
             }
           });
         } else {
@@ -397,7 +404,9 @@ getHashCode = function getHashCode(target){
           nodes.push({
             data: {
               id: p2,
-              name: p2
+              name: p2, 
+              nodeColor: 'grey',
+              cellPart: '-'
             }
           });
         } else {
@@ -433,7 +442,6 @@ getHashCode = function getHashCode(target){
       }
     }
     
-    console.log("foo:" + hashTable);
 
     elements = {
       nodes: nodes,
@@ -442,14 +450,11 @@ getHashCode = function getHashCode(target){
 
     log(elements); ///prints new JSON to the console.
 
+	
     // font size, color
     view = assignViewOptions(elements);
+return view; 
 
-    // render legend
-    renderLegend(view.keyInfo);
-
-    // render cytoscape
-    renderCytoscape(view);
   };
 
   /* go! */
@@ -486,7 +491,9 @@ getHashCode = function getHashCode(target){
           if (data.length <= 0) {
             ajaxFail(url, '');
           } else { //if data was retrieved
-            parseItToJSON(data);
+            var view = parseItToJSON(data);
+            renderLegend(view.keyInfo);
+            renderCytoscape(view);
           }
         }, 'text');
 
