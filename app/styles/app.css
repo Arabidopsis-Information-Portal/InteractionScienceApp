@@ -1,0 +1,14 @@
+#ebi_iv_cy {
+  height: 600px;
+  position: relative;
+}
+#ebi_iv_cy_wrapper {
+  position: relative;
+}
+#ebi_iv_tooltip {
+  position: absolute;
+  width: auto;
+  height: auto;
+  right: 0;
+  top: 0;
+}

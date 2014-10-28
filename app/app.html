@@ -1,0 +1,42 @@
+<div class="science-app" data-app-name="interactionscienceapphelp"></div>
+
+<div class="science-app" data-app-name="interactionscienceapp">
+  <div id="ebi_iv">
+    <h2>Enter a gene name to see its protein-protein interactions</h2>
+    <p>Query (Any gene name or AGI ID, e.g. ASK1, AT1G10940, AT3G62980):</p>
+    <form name="ebi_iv_gene_form" role="form" class="form-inline">
+        <label for="ebi_iv_gene" class="sr-only">Gene name or AGI ID</label>
+        <input type="text" name="ebi_iv_gene" id="ebi_iv_gene" value="AT3G62980" class="form-control" placeholder="Gene name or AGI ID"/>
+
+        <button type="submit" class="btn btn-success">Submit</button>
+        <button type="button" class="btn btn-danger" id="ebi_iv_gene_form_reset">Clear</button>
+    </form>
+
+    <div id="ebi_iv_cy_wrapper">
+      <div id="ebi_iv_cy" class="hidden"></div>
+      <div id="ebi_iv_tooltip" class="bg-primary"></div>
+    </div>
+
+    <div class="result"></div>
+
+    <div id="ebi_iv_legend" class="row hidden">
+      <div id="ebi_iv_colors" class="col-sm-6"></div>
+      <div id="ebi_iv_lines" class="col-sm-6">
+        <h5>
+          Line thickness by
+          <a href="http://www.ebi.ac.uk/intact/pages/faq/faq.xhtml#5" target="_blank">EBI's mi-score confidence value</a>.
+        </h5>
+        <img src='/app/images/linekey.png' />
+      </div>
+    </div>
+
+    <div class="row">
+      <div class="col-sm-12">
+        <p>
+          Data &amp; web services provided by
+          <a href="http://www.ebi.ac.uk/intact/" target="_blank">EMBL-EBI IntAct</a>.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

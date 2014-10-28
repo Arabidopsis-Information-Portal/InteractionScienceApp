@@ -1,0 +1,7 @@
+{
+  "name": "interactionscienceapp",
+  "private": true,
+  "dependencies": {
+    "cytoscape": "~2.3.3"
+  }
+}
