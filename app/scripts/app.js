@@ -1,15 +1,13 @@
-(function(window, $, undefined) {
+/*global cytoscape*/
+(function(window, $, cytoscape, undefined) {
   'use strict';
 
   console.log('Hello, InteractionScienceApp!');
 
-  var appContext = $('[data-app-name="interactionscienceapp"]');
-
   /* Generate Agave API docs */
   window.addEventListener('Agave::ready', function() {
-    var Agave = window.Agave;
 
-    var DEBUG, log, init, assignViewOptions, renderCytoscape, renderLegend, getEdgeInfo, ajaxFail, parseItToJSON, getHashCode, isEdgeDuplicate;
+    var DEBUG, log, init, assignViewOptions, renderCytoscape, renderLegend, getEdgeInfo, ajaxFail, parseItToJSON, getHashCode, isEdgeDuplicate, edges;
 
     DEBUG = true;
     log = function log( message ) {
@@ -58,9 +56,11 @@
         return hash;
       }
       for (var i = 0; i < target.length; i++) {
+        /*jshint bitwise: false*/
         var char = target.charCodeAt(i);
         hash = ((hash<<5)-hash)+char;
         hash = hash & hash; // Convert to 32bit integer
+        /*jshint bitwise: true*/
       }
       return hash;
     };
@@ -335,7 +335,7 @@
           duplicate = false;
         }
         else {
-          console.log("new");
+          console.log('new');
           hashTable[modHashedString] = stringToBeHashed;
           duplicate = false;
         }
@@ -531,4 +531,4 @@
     }
   });
 
-})(window, jQuery);
+})(window, jQuery, cytoscape);
