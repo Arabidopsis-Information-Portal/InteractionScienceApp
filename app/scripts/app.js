@@ -18,7 +18,7 @@
       var allScripts, i, arborURL;
       allScripts = document.querySelectorAll( 'script' );
       for ( i = 0; i < allScripts.length && ! arborURL; i++ ) {
-        if ( /^(.*)(\/cytoscape)\/(.*)cytoscape\.js??(.*)?$/.test( allScripts[i].src ) ) {
+        if ( /^(.*)(\/cytoscape[^\/]*)\/(.*)cytoscape\.js??(.*)?$/.test( allScripts[i].src ) ) {
           var match = /^(.*)(\/cytoscape)\/(.*)cytoscape\.js??(.*)?$/.exec( allScripts[i].src );
           arborURL = match[1] + match[2] + '/lib/arbor.js';
         }
