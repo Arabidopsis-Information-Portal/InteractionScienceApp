@@ -15,11 +15,12 @@
     var init, assignViewOptions, renderCytoscape, renderLegend, getEdgeInfo, ajaxFail, parseItToJSON, getHashCode, isEdgeDuplicate, edges;
 
     init = function() {
-      var allScripts, i, arborURL;
+      var allScripts, i, arborURL, re;
       allScripts = document.querySelectorAll( 'script' );
+      re = /^(.*)(\/cytoscape[^\/]*)\/(.*)cytoscape\.js??(.*)?$/;
       for ( i = 0; i < allScripts.length && ! arborURL; i++ ) {
-        if ( /^(.*)(\/cytoscape[^\/]*)\/(.*)cytoscape\.js??(.*)?$/.test( allScripts[i].src ) ) {
-          var match = /^(.*)(\/cytoscape)\/(.*)cytoscape\.js??(.*)?$/.exec( allScripts[i].src );
+        if ( re.test( allScripts[i].src ) ) {
+          var match = re.exec( allScripts[i].src );
           arborURL = match[1] + match[2] + '/lib/arbor.js';
         }
       }
