@@ -2,6 +2,6 @@
   "name": "interactionscienceapp",
   "private": true,
   "dependencies": {
-    "cytoscape": "~2.3.3"
+    "cytoscape": "~2.1.0"
   }
 }

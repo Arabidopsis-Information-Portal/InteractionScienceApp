@@ -1,50 +1,31 @@
 /*global cytoscape*/
 (function(window, $, cytoscape, undefined) {
   'use strict';
-
-  console.log('Hello, InteractionScienceApp!');
+  var DEBUG = false;
+  var log = function log( message ) {
+    if ( DEBUG ) {
+      console.log( message );
+    }
+  };
+  log('Hello, InteractionScienceApp!');
 
   /* Generate Agave API docs */
   window.addEventListener('Agave::ready', function() {
 
-    var DEBUG, log, init, assignViewOptions, renderCytoscape, renderLegend, getEdgeInfo, ajaxFail, parseItToJSON, getHashCode, isEdgeDuplicate, edges;
+    var init, assignViewOptions, renderCytoscape, renderLegend, getEdgeInfo, ajaxFail, parseItToJSON, getHashCode, isEdgeDuplicate, edges;
 
-    DEBUG = true;
-    log = function log( message ) {
-      if ( DEBUG ) {
-        console.log( message );
-      }
-    };
-
-    init = function init() {
-      var el, i, cytoscapeJsUrl, arborJsUrl, reCytoscape, reArbor, hasCytoscape, hasArbor, allScripts;
-
-      cytoscapeJsUrl = 'bower_components/cytoscape/dist/cytoscape.min.js';
-      arborJsUrl = 'bower_components/cytoscape/lib/arbor.js';
-
-      hasCytoscape = hasArbor = false;
-      reCytoscape = new RegExp( cytoscapeJsUrl );
-      reArbor = new RegExp( arborJsUrl );
+    init = function() {
+      var allScripts, i, arborURL;
       allScripts = document.querySelectorAll( 'script' );
-
-      for ( i = 0; i < allScripts.length && !( hasCytoscape && hasArbor ); i++ ) {
-        hasCytoscape = hasCytoscape || reCytoscape.test( allScripts[i].src );
-        hasArbor = hasArbor || reCytoscape.test( allScripts[i].src );
+      for ( i = 0; i < allScripts.length && ! arborURL; i++ ) {
+        if ( /^(.*)(\/cytoscape)\/(.*)cytoscape\.js??(.*)?$/.test( allScripts[i].src ) ) {
+          var match = /^(.*)(\/cytoscape)\/(.*)cytoscape\.js??(.*)?$/.exec( allScripts[i].src );
+          arborURL = match[1] + match[2] + '/lib/arbor.js';
+        }
       }
-
-      if ( !hasCytoscape ) {
-        log( 'adding Cytoscape.js' );
-
-        el = document.createElement( 'script' );
-        el.src = cytoscapeJsUrl;
-        el.type = 'text/javascript';
-        document.body.appendChild( el );
-      }
-      if (! hasArbor) {
-        log( 'adding Arbor.js' );
-
-        el = document.createElement( 'script' );
-        el.src = arborJsUrl;
+      if ( arborURL ) {
+        var el = document.createElement( 'script' );
+        el.src = arborURL;
         el.type = 'text/javascript';
         document.body.appendChild( el );
       }
@@ -151,7 +132,7 @@
           }
         }
       }
-      console.log(JSON.stringify(elements));
+      log(JSON.stringify(elements));
 
       ///just duplicate the above code for elements.nodes[i].data.nodeColor to create a
       ///key for node color and cellular localization
@@ -322,20 +303,20 @@
           stringToBeHashed = p2 + p1;
         }
         stringToBeHashed = stringToBeHashed = stringToBeHashed + p3 + p5;
-        console.log(stringToBeHashed);
+        log(stringToBeHashed);
         var hashedString = getHashCode(stringToBeHashed);
         var modHashedString = hashedString % hashTable.length;
 
         if (hashTable[modHashedString] === stringToBeHashed) {
           duplicate = true;
-          console.log('duplicate');
+          log('duplicate');
         }
         else if (hashTable[modHashedString] !== null) {
-          console.log('collision');//collision: same hash, different value, need linked lists here
+          log('collision');//collision: same hash, different value, need linked lists here
           duplicate = false;
         }
         else {
-          console.log('new');
+          log('new');
           hashTable[modHashedString] = stringToBeHashed;
           duplicate = false;
         }
